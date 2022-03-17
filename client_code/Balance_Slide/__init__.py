@@ -44,9 +44,13 @@ def swap(self, step):
       if 7-row == step[1][0] and col == step[1][1]:
         button_end = button
         
+  print(button_start.text)
+  print(button_end.text)
   button_temp = button_start
-  button_start = button_end
-  button_end = button_temp
+  button_list[(7-step[0][0])*12+step[0][1]] = button_end
+  button_list[(7-step[1][0])*12+step[1][1]] = button_temp
+  print(button_list[(7-step[0][0])*12+step[0][1]].text)
+  print(button_list[(7-step[1][0])*12+step[1][1]].text)
   
   refresh_grid_color(self)  
 
@@ -54,13 +58,15 @@ def jump_to_step(self, step_number):
     for step_index in range(step_number-1):
       step = anvil.server.call('get_balance_step', step_index+1)
       if (len(step)) == 0:
-        break;
-      print("hello")
+        break
       swap(self, step)
     
     step = anvil.server.call('get_balance_step',step_number)
     display_step(self, step)     
     refresh_grid_color(self)
+    #button_list = self.get_components()[0].get_components()
+    #print(button_list[(7-step[0][0])*12+step[0][1]].text)
+    #print(button_list[(7-step[1][0])*12+step[1][1]].text)
         
 class Balance_Slide(Balance_SlideTemplate):
   def __init__(self, **properties):
