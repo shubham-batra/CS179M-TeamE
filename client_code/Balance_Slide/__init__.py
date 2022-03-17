@@ -9,7 +9,6 @@ from popover import popover
 step_number = 1
 
 def display_step(self, step):
-  
   button_list = self.get_components()[0].get_components()
   for row in range(8):
     for col in range(12):
@@ -24,21 +23,14 @@ def display_step(self, step):
         button.background = "rgb(0,255,0)"
 
 def refresh_grid_color(self):
-  for index_row in range(len(grid_labels)):
-      for index_col in range(len(grid_labels[index_row])):
-        
-        if "UNUSED" in grid_labels[index_row][index_col]:
-          button = Button(text="", enabled=False, width="72", font_size=10, bold=True)
-
-        elif "NAN" in grid_labels[index_row][index_col]:
-          button = Button(text="", background="rgb(0,0,0)", enabled=False, width="72", font_size=10, bold=True)
-
-        else:
-          button = Button(text=grid_labels[index_row][index_col], background="rgb(173,216,230)", enabled=False
-                               , width="72", font_size=10, bold=True, foreground="rgb(0,0,0)")
-        button.popover(content=grid_labels[index_row][index_col] + "\n" + str(weights[index_row][index_col]), placement = 'top', trigger='hover')
-        gp.add_component(button, row=index_row, col_xs=index_col, width_xs=1
-                        , row_spacing=0)
+  button_list = self.get_components()[0].get_components()
+  for row in range(8):
+    for col in range(12):
+      button = button_list[row*12+col]
+      if not button.background =="rgb(0,0,0)" and button.text == "":
+        button.background = ""
+      if not button.background =="rgb(0,0,0)" and not button.text == "":
+        button.background = "rgb(173,216,230)"
         
 def swap(self, step):
   button_list = self.get_components()[0].get_components()
@@ -60,14 +52,15 @@ def swap(self, step):
 
 def jump_to_step(self, step_number):
     for step_index in range(step_number-1):
-      step = anvil.server.call('get_balance_step', step_index)
+      step = anvil.server.call('get_balance_step', step_index+1)
       if (len(step)) == 0:
         break;
+      print("hello")
       swap(self, step)
     
     step = anvil.server.call('get_balance_step',step_number)
-    display_step(self, step)
-        
+    display_step(self, step)     
+    refresh_grid_color(self)
         
 class Balance_Slide(Balance_SlideTemplate):
   def __init__(self, **properties):
@@ -107,7 +100,7 @@ class Balance_Slide(Balance_SlideTemplate):
           button = Button(text="", background="rgb(0,0,0)", enabled=False, width="72", font_size=10, bold=True)
 
         else:
-          button = Button(text=grid_labels[index_row][index_col], background="rgb(173,216,230)", enabled=False
+          button = Button(text=grid_labels[index_row][index_col], background="rgb(173,216,230)", enabled=True
                                , width="72", font_size=10, bold=True, foreground="rgb(0,0,0)")
         button.popover(content=grid_labels[index_row][index_col] + "\n" + str(weights[index_row][index_col]), placement = 'top', trigger='hover')
         gp.add_component(button, row=index_row, col_xs=index_col, width_xs=1
@@ -126,7 +119,7 @@ class Balance_Slide(Balance_SlideTemplate):
     button_row.add_component(cancel_button, width=100)
     self.add_component(button_row)
     
-    jump_to_step(self, 1)
+    jump_to_step(self, 2)
     
       
   def click_unload(self, **event_args):
