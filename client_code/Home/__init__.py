@@ -24,6 +24,7 @@ class Home(HomeTemplate):
     """This method is called when the button is clicked"""
     # Balance the ship when button is clicked
     anvil.server.call('balance')
+    open_form('Balance_Slide')
     pass
 
   def write_log_button_click(self, **event_args):

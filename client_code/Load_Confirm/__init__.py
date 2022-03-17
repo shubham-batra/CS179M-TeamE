@@ -12,8 +12,8 @@ class Load_Confirm(Load_ConfirmTemplate):
 
     # Any code you write here will run when the form opens.\
     
-    label1 = Label(text = "Unload", align="center", bold=True, background = "rgb(220,220,220)", foreground="rgb(0,0,0)")
-    label2 = Label(text = "Load", align="center", bold=True, background="rgb(220,220,220)", foreground = "rgb(0,0,0)")
+    label1 = Label(text = "Unload", align="center", bold=True, background = "rgb(180,180,180)", foreground="rgb(0,0,0)")
+    label2 = Label(text = "Load", align="center", bold=True, background="rgb(180,180,180)", foreground = "rgb(0,0,0)")
     row = DataRowPanel()
     row.add_component(label1, column=0)
     row.add_component(label2, column=1)
@@ -52,7 +52,7 @@ class Load_Confirm(Load_ConfirmTemplate):
   
   
   def click_cancel(self, **event_args):
-    open_form('Form1')
+    open_form('Home')
     
     
 5

@@ -1,4 +1,4 @@
-from ._anvil_designer import Unload_PageTemplate
+from ._anvil_designer import Balance_SlideTemplate
 from anvil import *
 import anvil.server
 import anvil.tables as tables
@@ -6,15 +6,38 @@ import anvil.tables.query as q
 from anvil.tables import app_tables
 from popover import popover
 
-class Unload_Page(Unload_PageTemplate):
+step_number = 1
+
+def display_step(self, step):
+  
+  button_list = self.get_components()[0].get_components()
+  for row in range(8):
+    for col in range(12):
+      button = button_list[row*12+col]
+      if col == step[0][1] and 7-row > min(step[0][0], step[1][0]) and 7-row < max(step[0][0], step[1][0]):
+        button.background = "rgb(255, 255, 0)"
+      if 7-row == step[1][0] and col > min(step[0][1], step[1][1]) and col < max(step[0][1], step[1][1]):
+        button.background = "rgb(255, 255, 0)"
+      if 7-row == step[0][0] and col == step[0][1]:
+        button.background = "rgb(255,0,0)"
+      if 7-row == step[1][0] and col == step[1][1]:
+        button.background = "rgb(0,255,0)"
+
+
+def jump_to_step(self, step_number):
+    for step_index in range(step_number):
+      step = anvil.server.call('get_balance_step', step_number)
+      # done
+      if (len(step)) == 0:
+        return
+      display_step(self, step)
+
+class Balance_Slide(Balance_SlideTemplate):
   def __init__(self, **properties):
     # Set Form properties and Data Bindings.
     self.init_components(**properties)
 
     # Any code you write here will run when the form opens.
-    
-    
-    
     
     # Dynamically generating the ship grid
     grid_labels, weights = anvil.server.call('load_manifest_grid')
@@ -47,9 +70,8 @@ class Unload_Page(Unload_PageTemplate):
           button = Button(text="", background="rgb(0,0,0)", enabled=False, width="72", font_size=10, bold=True)
 
         else:
-          button = Button(text=grid_labels[index_row][index_col], background="rgb(173,216,230)"
+          button = Button(text=grid_labels[index_row][index_col], background="rgb(173,216,230)", enabled=False
                                , width="72", font_size=10, bold=True, foreground="rgb(0,0,0)")
-        button.set_event_handler('click', self.toggle_offload)   
         button.popover(content=grid_labels[index_row][index_col] + "\n" + str(weights[index_row][index_col]), placement = 'top', trigger='hover')
         gp.add_component(button, row=index_row, col_xs=index_col, width_xs=1
                         , row_spacing=0)
@@ -58,7 +80,7 @@ class Unload_Page(Unload_PageTemplate):
     self.add_component(gp)
     
     # Add button
-    confirm_unload_button = Button(text="Confirm", bold=True, background="rgb(0,255,0)", foreground="rgb(255,255,255)")
+    confirm_unload_button = Button(text="Next", bold=True, background="rgb(180,180,180)", foreground="rgb(255,255,255)")
     confirm_unload_button.set_event_handler('click', self.click_unload)
     cancel_button = Button(text="Cancel", bold=True, background="rgb(255,0,0)", foreground="rgb(255,255,255)")
     cancel_button.set_event_handler('click', self.click_cancel)
@@ -66,16 +88,10 @@ class Unload_Page(Unload_PageTemplate):
     button_row.add_component(confirm_unload_button, width=100)
     button_row.add_component(cancel_button, width=100)
     self.add_component(button_row)
-
-  def toggle_offload(self, **event_args):
-    # If Yellow
-    if event_args['sender'].background == "rgb(255,255,0)":
-      event_args['sender'].background = "rgb(173,216,230)"
-      # If White
-    else:
-      event_args['sender'].background="rgb(255,255,0)"
+    
+    jump_to_step(self, 1)
+    
       
-
   def click_unload(self, **event_args):
     unload_containers = []
     button_list = self.get_components()[1].get_components()
@@ -91,4 +107,3 @@ class Unload_Page(Unload_PageTemplate):
   
   def click_cancel(self, **event_args):
     open_form('Home')
-

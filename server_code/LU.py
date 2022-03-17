@@ -46,11 +46,11 @@ def load_unload():
   
     lines = file_content.split('\n')
     for line in lines:
+      if len(lines) == 1 and line == "":
+        break;
       container = line.split(' ')
       unload_list.append((int(container[0]), int(container[1])))
-      
-      
-    print("1")
+
     file_path = "load_list.txt"
     row = app_tables.data.get(name=file_path)
     file_media = row['media_obj']
@@ -59,11 +59,13 @@ def load_unload():
   
     print(file_content)
     load_list = len(file_content.split('\n'))
-    print(len(file_content.split('\n')))
     
     lines = file_content.split('\n')
     for line in lines:
       load_names.append(line)
+    if load_names[0] == "":
+      load_list = 0
+      load_names = []
     
     # 2-D list of ints to represent starting board
     board =  [ [0] * cols for _ in range(rows)]

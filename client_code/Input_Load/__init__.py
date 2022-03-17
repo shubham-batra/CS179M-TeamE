@@ -15,7 +15,7 @@ class Input_Load(Input_LoadTemplate):
     # Any code you write here will run when the form opens.
 
     # Add button
-    next_load_button = Button(text="Next", bold=True, background="rgb(220,220,220)", foreground="rgb(255,255,255)")
+    next_load_button = Button(text="Next", bold=True, background="rgb(180,180,180)", foreground="rgb(255,255,255)")
     next_load_button.set_event_handler('click', self.click_next)
     confirm_load_button = Button(text="Confirm", bold=True, background="rgb(0,255,0)", foreground="rgb(255,255,255)")
     confirm_load_button.set_event_handler('click', self.click_load)
@@ -45,4 +45,4 @@ class Input_Load(Input_LoadTemplate):
   
   
   def click_cancel(self, **event_args):
-    open_form('Form1')
+    open_form('Home')

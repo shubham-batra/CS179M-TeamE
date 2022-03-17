@@ -114,6 +114,8 @@ def load_load_textfile():
   
   lines = file_content.split('\n')
   
+  if len(lines) == 1 and lines[0] == "":
+    lines = []
   return lines
 
 @anvil.server.callable
@@ -129,6 +131,8 @@ def load_unload_textfile():
   
   container_names = []
   for line in lines:
+    if len(lines) == 1 and line == "":
+      break;
     line = line.split(" ")
     container_names.append(line[2])
     
@@ -140,3 +144,24 @@ def get_file_from_client(file):
   # Delete file currently in db before adding new file to db
   app_tables.input_manifest.delete_all_rows()
   app_tables.input_manifest.add_row(name=file.name, media_obj=file)
+  
+@anvil.server.callable
+def get_balance_step(step_number):
+  
+  file_path = "operation_list.txt"
+  row = app_tables.data.get(name=file_path)
+  file_media = row['media_obj']
+  
+  file_content = file_media.get_bytes().decode("utf-8")
+  
+  lines = file_content.split('\n')
+  
+  for index_line in range(len(lines)):
+    # if the operation list is empty
+    if index_line == 0 and lines[0] == "":
+      return []
+    words = lines[index_line].split(" ")
+    if index_line+1 == step_number:
+      return [(int(words[0]), int(words[1])), (int(words[2]), int(words[3])), words[4]]
+    
+  return []
