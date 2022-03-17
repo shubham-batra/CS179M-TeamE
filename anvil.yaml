@@ -1,0 +1,50 @@
+dependencies:
+- app_id: 4C57JNYY2RPXWKY3
+  version: {dev: false}
+services:
+- source: /runtime/services/tables.yml
+  client_config: {}
+  server_config: {}
+startup: {type: form, module: Login}
+package_name: clone_of
+allow_embedding: false
+name: Clone of CS179M (2)
+runtime_options: {version: 2, client_version: '3', server_version: python3-full}
+metadata: {}
+startup_form: Home
+native_deps: {head_html: ''}
+db_schema:
+  input_manifest:
+    title: input_manifest
+    client: none
+    server: full
+    columns:
+    - name: name
+      admin_ui: {width: 200}
+      type: string
+    - name: media_obj
+      admin_ui: {width: 200}
+      type: media
+  data:
+    title: data
+    client: none
+    server: full
+    columns:
+    - name: name
+      admin_ui: {width: 200}
+      type: string
+    - name: media_obj
+      admin_ui: {width: 200}
+      type: media
+  output_manifest:
+    title: output_manifest
+    client: none
+    server: full
+    columns:
+    - name: name
+      admin_ui: {width: 200}
+      type: string
+    - name: media_obj
+      admin_ui: {width: 200}
+      type: media
+renamed: true
