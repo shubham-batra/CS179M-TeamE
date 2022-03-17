@@ -14,24 +14,61 @@ def display_step(self, step):
   for row in range(8):
     for col in range(12):
       button = button_list[row*12+col]
-      if col == step[0][1] and 7-row > min(step[0][0], step[1][0]) and 7-row < max(step[0][0], step[1][0]):
+      if col == step[0][1] and 7-row >= min(step[0][0], step[1][0]) and 7-row <= max(step[0][0], step[1][0]):
         button.background = "rgb(255, 255, 0)"
-      if 7-row == step[1][0] and col > min(step[0][1], step[1][1]) and col < max(step[0][1], step[1][1]):
+      if 7-row == step[1][0] and col >= min(step[0][1], step[1][1]) and col <= max(step[0][1], step[1][1]):
         button.background = "rgb(255, 255, 0)"
       if 7-row == step[0][0] and col == step[0][1]:
         button.background = "rgb(255,0,0)"
       if 7-row == step[1][0] and col == step[1][1]:
         button.background = "rgb(0,255,0)"
 
+def refresh_grid_color(self):
+  for index_row in range(len(grid_labels)):
+      for index_col in range(len(grid_labels[index_row])):
+        
+        if "UNUSED" in grid_labels[index_row][index_col]:
+          button = Button(text="", enabled=False, width="72", font_size=10, bold=True)
+
+        elif "NAN" in grid_labels[index_row][index_col]:
+          button = Button(text="", background="rgb(0,0,0)", enabled=False, width="72", font_size=10, bold=True)
+
+        else:
+          button = Button(text=grid_labels[index_row][index_col], background="rgb(173,216,230)", enabled=False
+                               , width="72", font_size=10, bold=True, foreground="rgb(0,0,0)")
+        button.popover(content=grid_labels[index_row][index_col] + "\n" + str(weights[index_row][index_col]), placement = 'top', trigger='hover')
+        gp.add_component(button, row=index_row, col_xs=index_col, width_xs=1
+                        , row_spacing=0)
+        
+def swap(self, step):
+  button_list = self.get_components()[0].get_components()
+  button_start = Button()
+  button_end = Button()
+  for row in range(8):
+    for col in range(12):
+      button = button_list[row*12+col]
+      if 7-row == step[0][0] and col == step[0][1]:
+        button_start = button
+      if 7-row == step[1][0] and col == step[1][1]:
+        button_end = button
+        
+  button_temp = button_start
+  button_start = button_end
+  button_end = button_temp
+  
+  refresh_grid_color(self)  
 
 def jump_to_step(self, step_number):
-    for step_index in range(step_number):
-      step = anvil.server.call('get_balance_step', step_number)
-      # done
+    for step_index in range(step_number-1):
+      step = anvil.server.call('get_balance_step', step_index)
       if (len(step)) == 0:
-        return
-      display_step(self, step)
-
+        break;
+      swap(self, step)
+    
+    step = anvil.server.call('get_balance_step',step_number)
+    display_step(self, step)
+        
+        
 class Balance_Slide(Balance_SlideTemplate):
   def __init__(self, **properties):
     # Set Form properties and Data Bindings.
