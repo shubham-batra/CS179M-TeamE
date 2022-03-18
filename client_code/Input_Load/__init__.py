@@ -40,6 +40,7 @@ class Input_Load(Input_LoadTemplate):
       load_list.append(self.text_box_1.text)
       
     anvil.server.call('write_load_containers', load_list)
+    anvil.server.call('write_log', "Selected " + str(len(anvil.server.call('load_load_textfile_containers'))) + " containers to load")
     load_list = []
     open_form('Load_Confirm')
   

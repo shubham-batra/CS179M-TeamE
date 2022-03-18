@@ -179,7 +179,7 @@ def jump_to_step(self, step_number, after_input_weight=False):
       if (len(step)) == 0:
         self.get_components()[2].get_components()[0].text = "Finish"
         self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
-        self.get_components()[0].text = ""
+        self.get_components()[0].text = "Confirm ship state"
         return
       
       weight = -1
@@ -196,7 +196,7 @@ def jump_to_step(self, step_number, after_input_weight=False):
     if (len(step)) == 0:
       self.get_components()[2].get_components()[0].text = "Finish"
       self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
-      self.get_components()[0].text = ""
+      self.get_components()[0].text = "Confirm ship state"
       return
     
     if step[3] == "M":
@@ -227,12 +227,18 @@ def next_step(self):
       else:
         weight = load_list[load_number][1]
       load_number = load_number + 1
+    if step[3] == "M":
+      anvil.server.call('write_log',"Moved " + step[2] + " from (" + str(step[0][0]) + "," + str(step[0][1]) + ") to (" + str(step[1][0]) + "," + str(step[1][1]) + ")")
+    if step[3] == "L":
+      anvil.server.call('write_log',"Loaded " + step[2] + " to (" + str(step[1][0]) + "," + str(step[1][1]) + ")")
+    if step[3] == "U":
+      anvil.server.call('write_log',"Unloaded " + step[2] + " from (" + str(step[0][0]) + "," + str(step[0][1]) + ")")
     swap(self, step, weight)
   step = anvil.server.call('get_operation_step',step_number)
   if (len(step)) == 0:
     self.get_components()[2].get_components()[0].text = "Finish"
     self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
-    self.get_components()[0].text = ""
+    self.get_components()[0].text = "Confirm ship state"
     return
   
   if step[3] == "M":
@@ -256,16 +262,19 @@ class UL_Slide(UL_SlideTemplate):
     load_page(self)
     
     global step_number
-    step_number = 1
+    step_number = 0
     global load_number
     load_number = 0
     
-    jump_to_step(self, step_number)
+    next_step(self)
     
       
   def click_submit_weight(self, **event_args):
     
     # save into load_list.txt the new weight
+    if self.get_components()[1].text is None:
+      self.get_components()[1].placeholder = "Cannot be empty!"
+      return
     container_index = int(self.get_components()[0].tooltip)
     weight = self.get_components()[1].text
     anvil.server.call('write_load_container_weight', container_index, weight)
@@ -275,6 +284,8 @@ class UL_Slide(UL_SlideTemplate):
       
   def click_next(self, **event_args):
     if self.get_components()[2].get_components()[0].text == "Finish":
+      anvil.server.call('write_log',"Finished unloading/loading " + anvil.server.call('load_input_manifest_path'))
+      anvil.server.call('compile_UL_manifest')
       open_form('Home')
       return
     next_step(self)

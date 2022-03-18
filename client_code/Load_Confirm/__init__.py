@@ -48,6 +48,7 @@ class Load_Confirm(Load_ConfirmTemplate):
     
   def click_load(self, **event_args):
     anvil.server.call('load_unload')
+    anvil.server.call('write_log', "Started unloading/loading " + anvil.server.call('load_input_manifest_path'))
     open_form('UL_Slide')
   
   

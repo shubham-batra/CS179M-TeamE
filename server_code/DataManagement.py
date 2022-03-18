@@ -3,35 +3,18 @@ import anvil.tables.query as q
 from anvil.tables import app_tables
 import anvil.server
 from anvil.tables import app_tables
-import os
-import heapq
-import time
-
-# Moving manhattanly between cells takes 1 minute
-# Transferring from or to a truck takes 2 minutes
-# Transferring between ship and buffer takes 15 minutes
-# While loading only, the ship’s operation range is technically expanded to 10 x 12, where the extra 2 rows can be used to temporarily stack containers
-
-# 12 x 8 grid
-# 24 x 4 buffer
-
-
-manifest_path = 'ShipCase4.txt'
-rows = 8
-cols = 12
-partitions = []
-board = []
-final_descriptions = []
+from datetime import datetime
+import pytz
 
 @anvil.server.callable
 def load_manifest_grid():
     
-    global rows
-    global cols
-    global board
-    global partitions
-    global final_descriptions
-    global manifest_path
+    rows = 8
+    cols = 12
+    partitions = []
+    board = []
+    final_descriptions = []
+    manifest_path = ""
     
     for row in app_tables.input_manifest.search():
       manifest_content = row['media_obj'].get_bytes().decode("utf-8")
@@ -215,3 +198,114 @@ def write_load_container_weight(container_index, weight):
     output_media = anvil.BlobMedia(content_type="text/plain", content=file_contents, name=output_path)
     row = app_tables.data.get(name=output_path)
     row['media_obj'] = output_media
+
+@anvil.server.callable
+def update_user_textfile(username):
+  output_path = "user.txt"
+  file_contents = username
+  file_contents = file_contents.encode()      # String as bytes
+  output_media = anvil.BlobMedia(content_type="text/plain", content=file_contents, name=output_path)
+  row = app_tables.data.get(name=output_path)
+  row['media_obj'] = output_media
+  
+  
+@anvil.server.callable
+def load_user_textfile():
+  file_path = "user.txt"
+  row = app_tables.data.get(name=file_path)
+  file_media = row['media_obj']
+  
+  file_contents = file_media.get_bytes().decode("utf-8")
+    
+  return file_contents
+
+@anvil.server.callable
+def load_input_manifest_path():
+  for row in app_tables.input_manifest.search():
+    manifest_path = row['media_obj'].name
+  return manifest_path
+
+@anvil.server.callable
+def load_output_manifest_path():
+  for row in app_tables.output_manifest.search():
+    manifest_path = row['media_obj'].name
+  return manifest_path
+
+@anvil.server.callable
+def load_output_manifest_media():
+  for row in app_tables.output_manifest.search():
+    media_obj = row['media_obj']
+  return media_obj
+
+@anvil.server.callable
+def load_log_media():
+  file_path = "log.txt"
+  row = app_tables.data.get(name=file_path)
+  file_media = row['media_obj']
+  return file_media
+
+@anvil.server.callable
+def write_log(text):
+  file_path = "log.txt"
+  row = app_tables.data.get(name=file_path)
+  file_media = row['media_obj']
+  file_contents = file_media.get_bytes().decode("utf-8")
+  
+  tz_PST = pytz.timezone('America/Los_Angeles') 
+  datetime_PST = datetime.now(tz_PST)
+  time = datetime_PST.strftime("%d-%m-%Y %H:%M:%S")
+  
+  text = "\n[" + time + "] (" + load_user_textfile() + ") " + text
+  file_contents = file_contents + text
+  file_contents = file_contents.encode()      # String as bytes
+  output_media = anvil.BlobMedia(content_type="text/plain", content=file_contents, name=file_path)
+  row = app_tables.data.get(name=file_path)
+  row['media_obj'] = output_media
+  
+@anvil.server.callable
+def compile_UL_manifest():
+  output_manifest_media = load_output_manifest_media()
+  output_manifest_path = load_output_manifest_path()
+  file_contents = output_manifest_media.get_bytes().decode("utf-8")
+  
+  operation_file_path = "operation_list.txt"
+  row = app_tables.data.get(name=operation_file_path)
+  operation_file_media = row['media_obj']
+
+  load_list = load_load_textfile()
+  
+  operation_file_contents = operation_file_media.get_bytes().decode("utf-8")
+  operation_file_contents = operation_file_contents.split('\n')
+  
+  file_contents_line_list = file_contents.split('\n')
+  
+  container_num = 0
+  for line in operation_file_contents:
+    line = line.split(' ')
+    if line[5] == "L":
+      
+      for index, manifest_line in enumerate(file_contents_line_list):
+        row = int(manifest_line[2:3]) - 1
+        col = int(manifest_line[4:6]) - 1
+        if row == int(line[2]) and col == int(line[3]):
+          if load_list[container_num][1] == "":
+            file_contents_line_list[index] = '[0' + str(row+1) + ',' + ('0' + str(col+1))[-2:] + '], {99999}, ' + load_list[container_num][0]
+          else:
+            file_contents_line_list[index] = '[0' + str(row+1) + ',' + ('0' + str(col+1))[-2:] + '], {' + ('0000' + str(load_list[container_num][1]))[-5:]+ '}, ' + load_list[container_num][0]
+          container_num = container_num + 1          
+  
+  file_contents = ""
+  new_line = ""
+  for line in file_contents_line_list:
+    file_contents = file_contents + new_line + line
+    new_line = "\n"   
+        
+  file_contents = file_contents.encode()      # String as bytes
+  output_manifest_media = anvil.BlobMedia(content_type="text/plain", content=file_contents, name=output_manifest_path)
+  app_tables.output_manifest.delete_all_rows()
+  app_tables.output_manifest.add_row(name=output_manifest_path, media_obj=output_manifest_media)
+                                                                                          
+  
+  
+  
+  

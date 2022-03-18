@@ -34,6 +34,7 @@ def balance():
     global partitions
     global final_descriptions
     global operation_list
+    global manifest_path
 
     for row in app_tables.input_manifest.search():
       manifest_content = row['media_obj'].get_bytes().decode("utf-8")

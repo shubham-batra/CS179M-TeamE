@@ -85,6 +85,7 @@ class Unload_Page(Unload_PageTemplate):
           unload_containers.append((7-row, col, button.text))
       
     anvil.server.call('write_unload_containers', unload_containers)
+    anvil.server.call('write_log', "Selected " + str(len(anvil.server.call('load_unload_textfile_containers'))) + " containers to unload")
     open_form('Input_Load')
   
   

@@ -131,6 +131,7 @@ def jump_to_step(self, step_number):
       if (len(step)) == 0:
         self.get_components()[2].get_components()[0].text = "Finish"
         self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
+        self.get_components()[0].text = "Confirm ship state"
         return
       swap(self, step)
     
@@ -138,6 +139,7 @@ def jump_to_step(self, step_number):
     if (len(step)) == 0:
       self.get_components()[2].get_components()[0].text = "Finish"
       self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
+      self.get_components()[0].text = "Confirm ship state"
       return
     self.get_components()[0].text = "Move container" + step[2][:7] + " from the red to the green along the yellow path"
     display_step(self, step)     
@@ -149,11 +151,13 @@ def next_step(self):
   
   if step_number >= 2:
     step = anvil.server.call('get_operation_step', step_number-1)
+    anvil.server.call('write_log',"Moved " + step[2] + " from (" + str(step[0][0]) + "," + str(step[0][1]) + ") to (" + str(step[1][0]) + "," + str(step[1][1]) + ")")
     swap(self, step)
   step = anvil.server.call('get_operation_step',step_number)
   if (len(step)) == 0:
     self.get_components()[2].get_components()[0].text = "Finish"
     self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
+    self.get_components()[0].text = "Confirm ship state"
     return
   self.get_components()[0].text = "Move the " + step[2][:7] + " container from the red to the green along the yellow path"
   display_step(self, step)     
@@ -176,6 +180,7 @@ class Balance_Slide(Balance_SlideTemplate):
       
   def click_next(self, **event_args):
     if self.get_components()[2].get_components()[0].text == "Finish":
+      anvil.server.call('write_log',"Finished balancing " + anvil.server.call('load_input_manifest_path'))
       open_form('Home')
       return
     next_step(self)

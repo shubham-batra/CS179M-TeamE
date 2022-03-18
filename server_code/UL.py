@@ -29,6 +29,7 @@ def load_unload():
     global final_descriptions
     global operation_list
     global finished_unload
+    global manifest_path
     
     global unload_list
     global load_list
