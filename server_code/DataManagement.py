@@ -104,7 +104,7 @@ def write_load_containers(load_list):
     row['media_obj'] = output_media
     
 @anvil.server.callable
-def load_load_textfile():
+def load_load_textfile_containers():
   
   file_path = "load_list.txt"
   row = app_tables.data.get(name=file_path)
@@ -114,12 +114,17 @@ def load_load_textfile():
   
   lines = file_content.split('\n')
   
-  if len(lines) == 1 and lines[0] == "":
-    lines = []
-  return lines
+  load_containers = []
+  for line in lines:
+    if len(lines) == 1 and line == "":
+      break;
+    line = line.split(" ")
+    load_containers.append(line[0])
+    
+  return load_containers
 
 @anvil.server.callable
-def load_unload_textfile():
+def load_unload_textfile_containers():
   
   file_path = "unload_list.txt"
   row = app_tables.data.get(name=file_path)
@@ -146,7 +151,7 @@ def get_file_from_client(file):
   app_tables.input_manifest.add_row(name=file.name, media_obj=file)
   
 @anvil.server.callable
-def get_balance_step(step_number):
+def get_operation_step(step_number):
   
   file_path = "operation_list.txt"
   row = app_tables.data.get(name=file_path)
@@ -162,6 +167,51 @@ def get_balance_step(step_number):
       return []
     words = lines[index_line].split(" ")
     if index_line+1 == step_number:
-      return [(int(words[0]), int(words[1])), (int(words[2]), int(words[3])), words[4]]
+#       return [(int(words[0]), int(words[1])), (int(words[2]), int(words[3])), words[4]]
+      return [(int(words[0]), int(words[1])), (int(words[2]), int(words[3])), words[4], words[5]]
     
   return []
+
+@anvil.server.callable
+def load_load_textfile():
+    
+  file_path = "load_list.txt"
+  row = app_tables.data.get(name=file_path)
+  file_media = row['media_obj']
+  
+  file_content = file_media.get_bytes().decode("utf-8")
+  
+  lines = file_content.split('\n')
+  
+  load_list = []
+  for line in lines:
+    if len(lines) == 1 and line == "":
+      break;
+    line = line.split(" ")
+    if len(line) == 1:
+      line.append("")
+    load_list.append([line[0], line[1]])
+    
+  return load_list
+
+@anvil.server.callable
+def write_load_container_weight(container_index, weight):
+  
+    load_list = load_load_textfile()
+  
+    output_path = "load_list.txt"
+    file_contents = ""
+    new_line = ""
+    for index_container in range(len(load_list)):
+      if index_container == container_index:
+        file_contents = file_contents + new_line + load_list[index_container][0] + " " + str(weight)
+      elif load_list[index_container][1] == "":
+        file_contents = file_contents + new_line + load_list[index_container][0]
+      else:
+        file_contents = file_contents + new_line + load_list[index_container][0] + " " + load_list[index_container][1]
+      new_line = "\n"
+         
+    file_contents = file_contents.encode()      # String as bytes
+    output_media = anvil.BlobMedia(content_type="text/plain", content=file_contents, name=output_path)
+    row = app_tables.data.get(name=output_path)
+    row['media_obj'] = output_media

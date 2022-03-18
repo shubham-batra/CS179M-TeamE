@@ -19,8 +19,8 @@ class Load_Confirm(Load_ConfirmTemplate):
     row.add_component(label2, column=1)
     self.add_component(row)
     
-    load_list = anvil.server.call('load_load_textfile')
-    unload_list = anvil.server.call('load_unload_textfile')
+    load_list = anvil.server.call('load_load_textfile_containers')
+    unload_list = anvil.server.call('load_unload_textfile_containers')
     
     for row in range(max(len(load_list), len(unload_list))):
       label1_text = ""
@@ -47,8 +47,8 @@ class Load_Confirm(Load_ConfirmTemplate):
     self.add_component(button_row)
     
   def click_load(self, **event_args):
-    print("hellllo")
     anvil.server.call('load_unload')
+    open_form('UL_Slide')
   
   
   def click_cancel(self, **event_args):

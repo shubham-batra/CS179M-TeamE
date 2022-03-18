@@ -6,7 +6,7 @@ import os
 import heapq
 import time
 
-manifest_path = 'ShipCase5.txt'
+manifest_path = 'ShipCase2.txt'
 
 # Inputs will be list of containers to unload, represented as tuple of starting position
 # and number of containers to load
@@ -19,15 +19,17 @@ cols = 12
 board = []
 final_descriptions = []
 operation_list = []
+finished_unload = False
 
 @anvil.server.callable
-def load_unload():  
-  
+def load_unload():
     global rows
     global cols
     global board
     global final_descriptions
     global operation_list
+    global finished_unload
+    
     global unload_list
     global load_list
     global load_names
@@ -57,12 +59,12 @@ def load_unload():
   
     file_content = file_media.get_bytes().decode("utf-8")
   
-    print(file_content)
     load_list = len(file_content.split('\n'))
     
     lines = file_content.split('\n')
     for line in lines:
-      load_names.append(line)
+      line = line.split(' ')
+      load_names.append(line[0])
     if load_names[0] == "":
       load_list = 0
       load_names = []
@@ -70,15 +72,13 @@ def load_unload():
     # 2-D list of ints to represent starting board
     board =  [ [0] * cols for _ in range(rows)]
     # 2-D list of strings to track manifest descriptions
-    descriptions = [ [''] * cols for _ in range(rows-2)]
+    descriptions = [ ['UNUSED'] * cols for _ in range(rows)]
 
 #     f = open(manifest_path, 'r')
 #     lines = f.readlines()
     
     lines = manifest_content.split('\n')
     
-    print("2")
-
     # Parsing the input file, manifest, into a 2-D list of ints holding the weights of the containers 
     for line in lines:
         if line[18:].strip() == 'NAN':
@@ -106,9 +106,11 @@ def load_unload():
     start_time = time.time()
     print()
 
+    load_names.reverse()
     final_board = load_unload_ship(board)
+    final_descriptions = final_descriptions[:-2]
     write_to_file(final_descriptions, final_board)
-#     write_list_to_file()
+    write_list_to_file()
     end_time = time.time()
     print("Time taken:", '%.2f'%(end_time-start_time),"seconds")
 
@@ -232,11 +234,10 @@ def print_path(current_board):
       loads -= 1
       time_estimate = time_estimate + 15 + manhat(p, m)
       trace_board[m[0]][m[1]] = 99999
-      final_descriptions[m[0]][m[1]] = "Loaded"
-#       load_names.pop(0)
+      final_descriptions[m[0]][m[1]] = load_names.pop()
       last_pos = m
       last_loc = l
-      temp_s = temp_s = '' + str(8) + ' ' + str(0) + ' ' + str(m[0]) + ' ' + str(m[1]) + ' '+ final_descriptions[m[0]][m[1]]
+      temp_s = temp_s = '' + str(8) + ' ' + str(0) + ' ' + str(m[0]) + ' ' + str(m[1]) + ' '+ final_descriptions[m[0]][m[1]] + ' L'
       operation_list.append(temp_s)
       # print('Total time so far:', time_estimate)
     # No more loads, simply moved back to Bay
@@ -252,7 +253,7 @@ def print_path(current_board):
       time_estimate += manhat(last_pos, p)
       # print('Unloading container at', trace_board[p[0]][p[1]], 'at', p)
       trace_board[p[0]][p[1]] = 0
-      temp_s = temp_s = '' + str(p[0]) + ' ' + str(p[1]) + ' ' + str(8) + ' ' + str(0) + ' '+ final_descriptions[p[0]][p[1]]
+      temp_s = temp_s = '' + str(p[0]) + ' ' + str(p[1]) + ' ' + str(8) + ' ' + str(0) + ' '+ final_descriptions[p[0]][p[1]] + ' U'
       operation_list.append(temp_s)
       final_descriptions[p[0]][p[1]] = 'UNUSED'
       time_estimate = time_estimate + manhat(p, m) + 15
@@ -271,7 +272,7 @@ def print_path(current_board):
       # print('Moved crane from', last_pos, 'to', p)
       time_estimate += manhat(last_pos, p)
       # print('Moved container', trace_board[p[0]][p[1]], 'at', p, 'to', m)
-      temp_s = '' + str(p[0]) + ' ' + str(p[1]) + ' ' + str(m[0]) + ' ' + str(m[1]) + ' '+ final_descriptions[p[0]][p[1]]
+      temp_s = '' + str(p[0]) + ' ' + str(p[1]) + ' ' + str(m[0]) + ' ' + str(m[1]) + ' '+ final_descriptions[p[0]][p[1]] + ' M'
       operation_list.append(temp_s)
       time_estimate += manhat(p, m)
       swap(trace_board, p, m)
@@ -310,23 +311,32 @@ class Board():
     return self.board == other.board and self.unloads_left == other.unloads_left and self.loads_left == other.loads_left and self.location == other.location
 
   def __lt__(self, other):
-    return self.f < other.f
+    if self.f == other.f:
+      return self.h < other.h
+    else:
+      return self.f < other.f
 
   def __gt__(self, other):
-    return self.f > other.f
+    if self.f == other.f:
+      return self.h > other.h
+    else:
+      return self.f > other.f
   
   def __repr__(self):
       return f"g: {self.g} h: {self.h} f: {self.f}"
 
 # A star searching algorithm that attempts to load and unload containers in the least time
 def load_unload_ship(init_board):
+
+  global finished_unload
+
   start_board = Board(init_board, None)
   start_board.unloads_left = unload_list
   start_board.loads_left = load_list
   start_board.location = 'Dock'
   start_board.g = 0
   start_board.h = get_h(start_board)
-  start_board.f = start_board.g + start_board.h
+  start_board.f = start_board.g + start_board.h*10
   start_board.crane_pickup_pos = (rows-2,0)
   start_board.crane_moveto_pos = (rows-2,0)
   
@@ -340,7 +350,7 @@ def load_unload_ship(init_board):
   heapq.heappush(open_list, start_board)
 
   outer_iterations = 0
-  max_iterations = 500
+  max_iterations = 20000
 
   while len(open_list) > 0:
     outer_iterations += 1
@@ -351,7 +361,7 @@ def load_unload_ship(init_board):
     # print(current_board)
     # print_board(current_board.board)
     if outer_iterations > max_iterations:
-      print('FAILURE: Unable to find load/unload operation list')
+      print('2FAILURE: Unable to find load/unload operation list in time')
       # print_path(min_diff)
       print()
       print("Final manifest preview shown below:\n")
@@ -446,6 +456,8 @@ def load_unload_ship(init_board):
             heapq.heappush(open_list, new_board)
           # Exposed container is not in unload_list, so we expand to every open slot
           else:
+            if finished_unload == True:
+              continue
             for possible_move in open_slots(current_board.board, my_container):
               temp_board = [row[:] for row in current_board.board]
               swap(temp_board, my_container, possible_move)
@@ -458,7 +470,7 @@ def load_unload_ship(init_board):
               new_board.loads_left = current_board.loads_left
               new_board.location = 'Bay'
 
-              new_board.g = current_board.g + 1 + manhat(current_board.crane_moveto_pos, my_container) + manhat(my_container, possible_move)
+              new_board.g = current_board.g + 10 + manhat(current_board.crane_moveto_pos, my_container) + manhat(my_container, possible_move)
               new_board.h = get_h(new_board)
               new_board.f = new_board.g + new_board.h
               
@@ -470,6 +482,7 @@ def load_unload_ship(init_board):
               heapq.heappush(open_list, new_board)
       # No more containers to unload, moving crane to Dock without an unload
       else:
+        finished_unload = True
         temp_board = [row[:] for row in current_board.board]
         new_board = Board(temp_board, current_board)
 
@@ -490,7 +503,7 @@ def load_unload_ship(init_board):
           continue
         heapq.heappush(open_list, new_board)
 
-  print('FAILURE: Unable to find load/unload operation list')
+  print('1FAILURE: Unable to find load/unload operation list')
   # print("Boards expanded: "+ str(outer_iterations))
   # print_path(min_diff)
   print()
@@ -523,9 +536,14 @@ def write_to_file(d, b):
   app_tables.output_manifest.add_row(name=output_manifest_path, media_obj=output_manifest_media)
 
 def write_list_to_file():
-    new_file_name = manifest_path[:-4] + '-OPLIST.txt'
-    with open(new_file_name, 'w') as f:
-        newline = ''
-        for line in operation_list:
-            f.write(newline + line)
-            newline = '\n'
+    output_path = "operation_list.txt"
+    file_contents = ""
+    new_line = ""
+    for operation in operation_list:
+      file_contents = file_contents + new_line + operation
+      new_line = "\n"
+         
+    file_contents = file_contents.encode()      # String as bytes
+    output_media = anvil.BlobMedia(content_type="text/plain", content=file_contents, name=output_path)
+    row = app_tables.data.get(name=output_path)
+    row['media_obj'] = output_media

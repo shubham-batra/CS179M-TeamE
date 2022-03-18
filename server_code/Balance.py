@@ -44,7 +44,7 @@ def balance():
     # 2-D list of ints to represent starting board
     board =  [ [0] * cols for _ in range(rows)]
     # 2-D list of strings to track manifest descriptions
-    descriptions = [ [''] * cols for _ in range(rows-2)]
+    descriptions = [ ['UNUSED'] * cols for _ in range(rows)]
 
 #     f = open(manifest_path, 'r')
 #     lines = f.readlines()
@@ -76,6 +76,7 @@ def balance():
     start_time = time.time()
     print()
     final_board = balance_ship(board)
+    final_descriptions = final_descriptions[:-2]
     write_to_file(final_descriptions, final_board)
     write_list_to_file()
     end_time = time.time()
@@ -223,7 +224,7 @@ def print_path(current_board):
         # print('This took', time_estimate)
         # print('Moved container', descriptions[p[0]][p[1]], 'at', p, 'to', m)
         # temp_s = '' + str(p) + ' ' + str(m) + ' '+ final_descriptions[p[0]][p[1]]
-        temp_s = '' + str(p[0]) + ' ' + str(p[1]) + ' ' + str(m[0]) + ' ' + str(m[1]) + ' '+ final_descriptions[p[0]][p[1]]
+        temp_s = '' + str(p[0]) + ' ' + str(p[1]) + ' ' + str(m[0]) + ' ' + str(m[1]) + ' '+ final_descriptions[p[0]][p[1]] + ' M'
         operation_list.append(temp_s)
         time_estimate += manhat(p, m)
         # print('This took', time_estimate)
@@ -294,7 +295,7 @@ def balance_ship(init_board):
         # print("Expanding Board:")
         # print(current_board)
         # print_board(current_board.board)
-        print("Boards expanded: "+ str(outer_iterations))
+#         print("Boards expanded: "+ str(outer_iterations))
         if outer_iterations > max_iterations:
             print('FAILURE: Unable to balance within 10%, returned SIFT balance')
             print_path(min_diff)
