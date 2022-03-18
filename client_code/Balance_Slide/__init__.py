@@ -108,11 +108,28 @@ def jump_to_step(self, step_number):
   
     for step_index in range(step_number-1):
       step = anvil.server.call('get_balance_step', step_index+1)
+      # No more steps
       if (len(step)) == 0:
-        break
+        step = anvil.server.call('get_balance_step', step_index)
+        swap(self, step)
+        display_step(self, step)
+        self.get_components()[1].get_components()[0].text = "Finish"
+        self.get_components()[1].get_components()[0].background = "rgb(0,255,0)"
+        return
       swap(self, step)
     
     step = anvil.server.call('get_balance_step',step_number)
+    if (len(step)) == 0:
+      step = anvil.server.call('get_balance_step', step_number-1)
+      swap(self, step)
+      display_step(self, step)
+      self.get_components()[1].get_components()[0].text = "Finish"
+      self.get_components()[1].get_components()[0].background = "rgb(0,255,0)"
+      return
+    step_next = anvil.server.call('get_balance_step', step_number+1)
+    if (len(step_next)) == 0:
+      self.get_components()[1].get_components()[0].text = "Finish"
+      self.get_components()[1].get_components()[0].background = "rgb(0,255,0)"
     display_step(self, step)     
     button_list = self.get_components()[0].get_components()
         
@@ -124,6 +141,9 @@ class Balance_Slide(Balance_SlideTemplate):
     # Any code you write here will run when the form opens.
     
     load_page(self)
+    
+    global step_number
+    step_number = 4
     
     jump_to_step(self, step_number)
     
