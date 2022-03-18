@@ -4,7 +4,6 @@ import anvil.server
 import anvil.tables as tables
 import anvil.tables.query as q
 from anvil.tables import app_tables
-from popover import popover
 
 class Unload_Page(Unload_PageTemplate):
   def __init__(self, **properties):
@@ -50,7 +49,7 @@ class Unload_Page(Unload_PageTemplate):
           button = Button(text=grid_labels[index_row][index_col], background="rgb(173,216,230)"
                                , width="72", font_size=10, bold=True, foreground="rgb(0,0,0)")
         button.set_event_handler('click', self.toggle_offload)   
-        button.popover(content=grid_labels[index_row][index_col] + "\n" + str(weights[index_row][index_col]), placement = 'top', trigger='hover')
+        button.tooltip = grid_labels[index_row][index_col] + "\n" + str(weights[index_row][index_col])
         gp.add_component(button, row=index_row, col_xs=index_col, width_xs=1
                         , row_spacing=0)
       
