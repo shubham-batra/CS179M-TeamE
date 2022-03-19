@@ -31,6 +31,7 @@ class Input_Load(Input_LoadTemplate):
     global load_list
     
     load_list.append(self.text_box_1.text)
+    anvil.server.call('write_load_containers', load_list)
     self.text_box_1.text = ""
 
   def click_load(self, **event_args):

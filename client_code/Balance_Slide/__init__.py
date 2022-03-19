@@ -175,21 +175,29 @@ class Balance_Slide(Balance_SlideTemplate):
     self.init_components(**properties)
 
     # Any code you write here will run when the form opens.
-    
     load_page(self)
     
     global step_number
-    step_number = 0
+    # Checking for backup and setting step number as necessary
+    backup_pressed = anvil.server.call('get_backup_pressed')
+    if backup_pressed == 1:
+      step_number = int(anvil.server.call('load_backup')[1])
+      jump_to_step()
+    else:
+      step_number = 0
+      next_step(self)
     
-    next_step(self)
+    
     
       
   def click_next(self, **event_args):
     if self.get_components()[2].get_components()[0].text == "Finish":
       anvil.server.call('write_log',"Finished balancing " + anvil.server.call('load_input_manifest_path'))
+      anvil.server.call('set_backup_pressed',0)
       open_form('Home')
       return
     next_step(self)
   
   def click_cancel(self, **event_args):
+    anvil.server.call('set_backup_pressed',0)
     open_form('Home')

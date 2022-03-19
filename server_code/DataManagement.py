@@ -296,6 +296,7 @@ def compile_UL_manifest():
   file_contents_line_list = file_contents.split('\n')
   
   container_num = 0
+  operation_file_contents.pop(0)
   for line in operation_file_contents:
     line = line.split(' ')
     if line[5] == "L":

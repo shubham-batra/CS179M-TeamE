@@ -18,7 +18,19 @@ class Home(HomeTemplate):
 
   def backup_button_click(self, **event_args):
     """This method is called when the button is clicked"""
-    pass
+    anvil.server.call('set_backup_pressed',1)
+    backup = anvil.server.call('load_backup')
+    screen = backup[0]
+    step = backup[1]
+    if screen == 'Balance_Slide':
+      open_form('Balance_Slide')
+    elif screen == 'Select_Unload':
+      open_form('Unload_Page')
+    elif screen == 'Select_Load':
+      open_form('Input_Load')
+    else: # screen == UL_Slide
+      open_form('UL_Slide')
+    
 
   def form_show(self, **event_args):
     """This method is called when the HTML panel is shown on the screen"""

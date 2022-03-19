@@ -267,12 +267,22 @@ class UL_Slide(UL_SlideTemplate):
     
     load_page(self)
     
-    global step_number
-    step_number = 0
     global load_number
     load_number = 0
     
-    next_step(self)
+    global step_number
+    # Checking for backup and setting step number as necessary
+    backup_pressed = anvil.server.call('get_backup_pressed')
+    if backup_pressed == 1:
+      step_number = int(anvil.server.call('load_backup')[1])
+      jump_to_step(self,step_number, True)
+    else:
+      step_number = 0
+      next_step(self)
+    
+    
+    
+    
     
       
   def click_submit_weight(self, **event_args):
@@ -292,9 +302,11 @@ class UL_Slide(UL_SlideTemplate):
     if self.get_components()[2].get_components()[0].text == "Finish":
       anvil.server.call('write_log',"Finished unloading/loading " + anvil.server.call('load_input_manifest_path'))
       anvil.server.call('compile_UL_manifest')
+      anvil.server.call('set_backup_pressed',0)
       open_form('Home')
       return
     next_step(self)
   
   def click_cancel(self, **event_args):
+    anvil.server.call('set_backup_pressed',0)
     open_form('Home')
