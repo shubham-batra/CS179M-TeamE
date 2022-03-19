@@ -273,8 +273,10 @@ class UL_Slide(UL_SlideTemplate):
     global step_number
     # Checking for backup and setting step number as necessary
     backup_pressed = anvil.server.call('get_backup_pressed')
+    backup = anvil.server.call('load_backup')
     if backup_pressed == 1:
-      step_number = int(anvil.server.call('load_backup')[1])
+      step_number = int(backup[1])
+      if
       jump_to_step(self,step_number, True)
     else:
       step_number = 0
