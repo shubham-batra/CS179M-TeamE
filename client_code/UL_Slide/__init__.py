@@ -63,6 +63,12 @@ def load_page(self):
   button_row.add_component(next_button, width=100)
   button_row.add_component(cancel_button, width=100)
   self.add_component(button_row)
+  
+  # Add label for estimated time
+  est_time = anvil.server.call('get_est_time')
+  time_text = 'Total Estimated Time: ' + est_time + ' minutes'
+  est_time_label = Label(text=time_text, align='center',spacing_above='10')
+  self.add_component(est_time_label)
 
 def display_step(self, step):
   button_list = self.get_components()[1].get_components()

@@ -24,6 +24,7 @@ partitions = []
 board = []
 final_descriptions = []
 operation_list = []
+est_time = 0
 
 @anvil.server.callable
 def balance():
@@ -35,6 +36,7 @@ def balance():
     global final_descriptions
     global operation_list
     global manifest_path
+    global est_time
 
     for row in app_tables.input_manifest.search():
       manifest_content = row['media_obj'].get_bytes().decode("utf-8")
@@ -77,8 +79,9 @@ def balance():
     start_time = time.time()
     print()
     final_board = balance_ship(board)
+    est_time = final_board[1]
     final_descriptions = final_descriptions[:-2]
-    write_to_file(final_descriptions, final_board)
+    write_to_file(final_descriptions, final_board[0])
     write_list_to_file()
     end_time = time.time()
     print("Time taken:", '%.2f'%(end_time-start_time),"seconds")
@@ -236,7 +239,7 @@ def print_path(current_board):
     time_estimate += manhat(last_pos, (rows-2,0))
     # print('Returned to and ended at pink virtual cell')
     # print('Estimated time for balance list of operations is', time_estimate, 'minutes')
-    return trace_board
+    return (trace_board, time_estimate)
 
 # Board class to track manifest states in the astar balancing algorithm
 class Board():
@@ -299,11 +302,11 @@ def balance_ship(init_board):
 #         print("Boards expanded: "+ str(outer_iterations))
         if outer_iterations > max_iterations:
             print('FAILURE: Unable to balance within 10%, returned SIFT balance')
-            print_path(min_diff)
+            final_board = print_path(min_diff)
             print()
             print("Final manifest preview shown below:\n")
             print_board(min_diff.board)
-            return
+            return final_board
 
         if balanced(current_board.board) or reached_partition(current_board.board):
             if sum(current_board.board[rows-1]) == 0:
@@ -340,11 +343,11 @@ def balance_ship(init_board):
 
     print('FAILURE: Unable to balance within 10%, returned SIFT balance')
     # print("Boards expanded: "+ str(outer_iterations))
-    print_path(min_diff)
+    final_board = print_path(min_diff)
     print()
     print("Final manifest preview shown below:\n")
     print_board(min_diff.board)
-    return
+    return final_board
 
 # Node class to track astar shortest path lengh search states 
 class Node():
@@ -396,10 +399,11 @@ def write_list_to_file():
     output_path = "operation_list.txt"
     file_contents = ""
     new_line = ""
+    file_contents = file_contents + str(est_time) + '\n'
     for operation in operation_list:
       file_contents = file_contents + new_line + operation
       new_line = "\n"
-         
+    
     file_contents = file_contents.encode()      # String as bytes
     output_media = anvil.BlobMedia(content_type="text/plain", content=file_contents, name=output_path)
     row = app_tables.data.get(name=output_path)

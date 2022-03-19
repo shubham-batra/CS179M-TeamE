@@ -20,6 +20,7 @@ board = []
 final_descriptions = []
 operation_list = []
 finished_unload = False
+est_time = 0
 
 @anvil.server.callable
 def load_unload():
@@ -34,6 +35,7 @@ def load_unload():
     global unload_list
     global load_list
     global load_names
+    global est_time
 
     for row in app_tables.input_manifest.search():
       manifest_content = row['media_obj'].get_bytes().decode("utf-8")
@@ -109,8 +111,9 @@ def load_unload():
 
     load_names.reverse()
     final_board = load_unload_ship(board)
+    est_time = final_board[1]
     final_descriptions = final_descriptions[:-2]
-    write_to_file(final_descriptions, final_board)
+    write_to_file(final_descriptions, final_board[0])
     write_list_to_file()
     end_time = time.time()
     print("Time taken:", '%.2f'%(end_time-start_time),"seconds")
@@ -288,7 +291,7 @@ def print_path(current_board):
     # print('Moved crane from', last_pos, 'to', (rows-2,0))
     time_estimate = time_estimate + manhat(last_pos, (rows-2,0)) + 15
     # print('Moved crane to Dock, estimated time for balance list of operations is', time_estimate, 'minutes')
-  return trace_board
+  return (trace_board, time_estimate)
 
 # Board class to track manifest states in the astar balancing algorithm
 class Board():
@@ -367,7 +370,8 @@ def load_unload_ship(init_board):
       print()
       print("Final manifest preview shown below:\n")
       print_board(min_diff.board)
-      return
+      final_board = print_path(min_diff)
+      return final_board
 
     if finished(current_board.unloads_left, current_board.loads_left):
       if sum(current_board.board[rows-1]) == 0:
@@ -510,7 +514,8 @@ def load_unload_ship(init_board):
   print()
   print("Final manifest preview shown below:\n")
   print_board(min_diff.board)
-  return
+  final_board = print_path(min_diff)
+  return final_board
 
 def manhat(start, end):
   return abs(start[0]-end[0]) + abs(start[1]-end[1])
@@ -540,6 +545,7 @@ def write_list_to_file():
     output_path = "operation_list.txt"
     file_contents = ""
     new_line = ""
+    file_contents = file_contents + str(est_time) + '\n'
     for operation in operation_list:
       file_contents = file_contents + new_line + operation
       new_line = "\n"

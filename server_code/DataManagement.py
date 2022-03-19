@@ -144,6 +144,8 @@ def get_operation_step(step_number):
   
   lines = file_content.split('\n')
   
+  # Popping the estimated time
+  lines.pop(0)
   for index_line in range(len(lines)):
     # if the operation list is empty
     if index_line == 0 and lines[0] == "":
@@ -154,6 +156,20 @@ def get_operation_step(step_number):
       return [(int(words[0]), int(words[1])), (int(words[2]), int(words[3])), words[4], words[5]]
     
   return []
+
+@anvil.server.callable
+def get_est_time():
+  
+  file_path = "operation_list.txt"
+  row = app_tables.data.get(name=file_path)
+  file_media = row['media_obj']
+  
+  file_content = file_media.get_bytes().decode("utf-8")
+  
+  lines = file_content.split('\n')
+  
+  # Returning estimated time, should be in the first line
+  return lines[0]
 
 @anvil.server.callable
 def load_load_textfile():
