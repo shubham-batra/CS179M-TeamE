@@ -47,4 +47,9 @@ db_schema:
     - name: media_obj
       admin_ui: {width: 200}
       type: media
+  table_3:
+    title: Table 3
+    client: none
+    server: full
+    columns: []
 renamed: true

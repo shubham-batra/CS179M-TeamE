@@ -140,7 +140,7 @@ def jump_to_step(self, step_number):
       if (len(step)) == 0:
         self.get_components()[2].get_components()[0].text = "Finish"
         self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
-        self.get_components()[0].text = "Confirm ship state"
+        self.get_components()[0].text = "Final Ship State. Don't forget to download and email manifest!"
         return
       swap(self, step)
     
@@ -148,7 +148,7 @@ def jump_to_step(self, step_number):
     if (len(step)) == 0:
       self.get_components()[2].get_components()[0].text = "Finish"
       self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
-      self.get_components()[0].text = "Confirm ship state"
+      self.get_components()[0].text = "Final Ship State. Don't forget to download and email manifest!"
       return
     self.get_components()[0].text = "Move container" + step[2][:7] + " from the red to the green along the yellow path"
     display_step(self, step)     
@@ -166,7 +166,7 @@ def next_step(self):
   if (len(step)) == 0:
     self.get_components()[2].get_components()[0].text = "Finish"
     self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
-    self.get_components()[0].text = "Confirm ship state"
+    self.get_components()[0].text = "Final Ship State. Don't forget to download and email manifest!"
     return
   self.get_components()[0].text = "Move the " + step[2][:7] + " container from the red to the green along the yellow path"
   display_step(self, step)     

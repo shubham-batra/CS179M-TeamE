@@ -188,7 +188,7 @@ def jump_to_step(self, step_number, after_input_weight=False):
       if (len(step)) == 0:
         self.get_components()[2].get_components()[0].text = "Finish"
         self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
-        self.get_components()[0].text = "Confirm ship state"
+        self.get_components()[0].text = "Final Ship State. Don't forget to download and email manifest!"
         return
       
       weight = -1
@@ -205,7 +205,7 @@ def jump_to_step(self, step_number, after_input_weight=False):
     if (len(step)) == 0:
       self.get_components()[2].get_components()[0].text = "Finish"
       self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
-      self.get_components()[0].text = "Confirm ship state"
+      self.get_components()[0].text = "Final Ship State. Don't forget to download and email manifest!"
       return
     
     if step[3] == "M":
@@ -247,7 +247,7 @@ def next_step(self):
   if (len(step)) == 0:
     self.get_components()[2].get_components()[0].text = "Finish"
     self.get_components()[2].get_components()[0].background = "rgb(0,255,0)"
-    self.get_components()[0].text = "Confirm ship state"
+    self.get_components()[0].text = "Final Ship State. Don't forget to download and email manifest!"
     return
   
   if step[3] == "M":
