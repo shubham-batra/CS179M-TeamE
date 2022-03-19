@@ -46,7 +46,10 @@ class Unload_Page(Unload_PageTemplate):
           button = Button(text="", background="rgb(0,0,0)", enabled=False, width="72", font_size=10, bold=True)
 
         else:
-          button = Button(text=grid_labels[index_row][index_col], background="rgb(173,216,230)"
+          temp_text = grid_labels[index_row][index_col]
+          if len(temp_text) > 6:
+            temp_text = temp_text[:4] + '...'
+          button = Button(text=temp_text, background="rgb(173,216,230)"
                                , width="72", font_size=10, bold=True, foreground="rgb(0,0,0)")
         button.set_event_handler('click', self.toggle_offload)   
         button.tooltip = grid_labels[index_row][index_col] + "\n" + str(weights[index_row][index_col])
@@ -86,9 +89,11 @@ class Unload_Page(Unload_PageTemplate):
       
     anvil.server.call('write_unload_containers', unload_containers)
     anvil.server.call('write_log', "Selected " + str(len(anvil.server.call('load_unload_textfile_containers'))) + " containers to unload")
+    anvil.server.call('write_backup', 'Input_Load', -1)
     open_form('Input_Load')
   
   
   def click_cancel(self, **event_args):
+    anvil.server.call('set_backup_pressed',0)
     open_form('Home')
 

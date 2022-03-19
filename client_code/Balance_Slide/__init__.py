@@ -44,7 +44,10 @@ def load_page(self):
         button = Button(text="", background="rgb(0,0,0)", enabled=False, width="72", font_size=10, bold=True)
 
       else:
-        button = Button(text=grid_labels[index_row][index_col], background="rgb(173,216,230)", enabled=True
+        temp_text = grid_labels[index_row][index_col]
+        if len(temp_text) > 6:
+          temp_text = temp_text[:4] + '...'
+        button = Button(text=temp_text, background="rgb(173,216,230)", enabled=True
                               , width="72", font_size=10, bold=True, foreground="rgb(0,0,0)")
       button.tooltip = grid_labels[index_row][index_col] + "\n" + str(weights[index_row][index_col])
       gp.add_component(button, row=index_row+2, col_xs=index_col, width_xs=1
@@ -182,7 +185,7 @@ class Balance_Slide(Balance_SlideTemplate):
     backup_pressed = anvil.server.call('get_backup_pressed')
     if backup_pressed == 1:
       step_number = int(anvil.server.call('load_backup')[1])
-      jump_to_step()
+      jump_to_step(self, step_number)
     else:
       step_number = 0
       next_step(self)
@@ -191,6 +194,7 @@ class Balance_Slide(Balance_SlideTemplate):
     
       
   def click_next(self, **event_args):
+    anvil.server.call('write_backup', 'Balance_Slide', step_number+1)
     if self.get_components()[2].get_components()[0].text == "Finish":
       anvil.server.call('write_log',"Finished balancing " + anvil.server.call('load_input_manifest_path'))
       anvil.server.call('set_backup_pressed',0)

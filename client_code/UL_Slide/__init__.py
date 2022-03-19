@@ -45,7 +45,10 @@ def load_page(self):
         button = Button(text="", background="rgb(0,0,0)", enabled=False, width="72", font_size=10, bold=True)
 
       else:
-        button = Button(text=grid_labels[index_row][index_col], background="rgb(173,216,230)", enabled=True
+        temp_text = grid_labels[index_row][index_col]
+        if len(temp_text) > 6:
+          temp_text = temp_text[:4] + '...'
+        button = Button(text=temp_text, background="rgb(173,216,230)", enabled=True
                               , width="72", font_size=10, bold=True, foreground="rgb(0,0,0)")
       button.tooltip = grid_labels[index_row][index_col] + "\n" + str(weights[index_row][index_col])
       gp.add_component(button, row=index_row+2, col_xs=index_col, width_xs=1
@@ -276,24 +279,16 @@ class UL_Slide(UL_SlideTemplate):
     backup = anvil.server.call('load_backup')
     if backup_pressed == 1:
       step_number = int(backup[1])
-      if anvil.server.call('get_operation_step',step_number)[3] == 'L':
-        if backup[0] == 'Input_Weight':
-          jump_to_step(self, step_number)
-        else:
-          jump_to_step(self, step_number, True)
-      else:
-        jump_to_step(self, step_number)
+      step = anvil.server.call('get_operation_step',step_number)
+      jump_to_step(self, step_number)
     else:
       step_number = 0
       next_step(self)
     
-    
-    
-    
-    
       
   def click_submit_weight(self, **event_args):
-    
+    global step_number
+    anvil.server.call('write_backup', 'Input_Weight', step_number)
     # save into load_list.txt the new weight
     if self.get_components()[1].text is None:
       self.get_components()[1].placeholder = "Cannot be empty!"
@@ -302,10 +297,10 @@ class UL_Slide(UL_SlideTemplate):
     weight = self.get_components()[1].text
     anvil.server.call('write_load_container_weight', container_index, weight)
     
-    global step_number
     jump_to_step(self, step_number, True)
       
   def click_next(self, **event_args):
+    anvil.server.call('write_backup', 'UL_Slide', step_number+1)
     if self.get_components()[2].get_components()[0].text == "Finish":
       anvil.server.call('write_log',"Finished unloading/loading " + anvil.server.call('load_input_manifest_path'))
       anvil.server.call('compile_UL_manifest')

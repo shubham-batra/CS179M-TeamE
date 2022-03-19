@@ -28,6 +28,7 @@ class Input_Load(Input_LoadTemplate):
     self.add_component(button_row)
 
   def click_next(self, **event_args):
+    anvil.server.call('set_backup_pressed',0)
     global load_list
     
     load_list.append(self.text_box_1.text)
@@ -43,8 +44,11 @@ class Input_Load(Input_LoadTemplate):
     anvil.server.call('write_load_containers', load_list)
     anvil.server.call('write_log', "Selected " + str(len(anvil.server.call('load_load_textfile_containers'))) + " containers to load")
     load_list = []
+    anvil.server.call('write_backup', 'Load_Confirm', 1)
+    anvil.server.call('set_backup_pressed',0)
     open_form('Load_Confirm')
   
   
   def click_cancel(self, **event_args):
+    anvil.server.call('set_backup_pressed',0)
     open_form('Home')

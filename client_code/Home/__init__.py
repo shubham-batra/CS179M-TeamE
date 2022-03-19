@@ -18,17 +18,20 @@ class Home(HomeTemplate):
 
   def backup_button_click(self, **event_args):
     """This method is called when the button is clicked"""
+    anvil.server.call('write_log', 'Performed Backup')
     anvil.server.call('set_backup_pressed',1)
     backup = anvil.server.call('load_backup')
     screen = backup[0]
     step = backup[1]
     if screen == 'Balance_Slide':
       open_form('Balance_Slide')
-    elif screen == 'Select_Unload':
+    elif screen == 'Unload_Page':
       open_form('Unload_Page')
-    elif screen == 'Select_Load':
+    elif screen == 'Load_Confirm':
+      open_form('Load_Confirm')
+    elif screen == 'Input_Load':
       open_form('Input_Load')
-    else: # screen == UL_Slide
+    else: # screen == UL_Slide or 'Input_Screen'
       open_form('UL_Slide')
     
 
@@ -41,6 +44,7 @@ class Home(HomeTemplate):
     # Balance the ship when button is clicked
     anvil.server.call('balance')
     anvil.server.call('write_log',"Started balancing " + anvil.server.call('load_input_manifest_path'))
+    anvil.server.call('write_backup', 'Balance_Slide', 1)
     open_form('Balance_Slide')
 
   def write_log_button_click(self, **event_args):
@@ -56,6 +60,7 @@ class Home(HomeTemplate):
   def load_unload_button_click(self, **event_args):
     """This method is called when the button is clicked"""
     anvil.server.call('write_log',"Started load/unload process for " + anvil.server.call('load_input_manifest_path'))
+    anvil.server.call('write_backup', 'Unload_Page', -1)
     open_form('Unload_Page')
 
   def click_login(self, **event_args):
