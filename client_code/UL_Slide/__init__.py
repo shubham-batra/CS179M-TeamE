@@ -276,8 +276,13 @@ class UL_Slide(UL_SlideTemplate):
     backup = anvil.server.call('load_backup')
     if backup_pressed == 1:
       step_number = int(backup[1])
-      if
-      jump_to_step(self,step_number, True)
+      if anvil.server.call('get_operation_step',step_number)[3] == 'L':
+        if backup[0] == 'Input_Weight':
+          jump_to_step(self, step_number)
+        else:
+          jump_to_step(self, step_number, True)
+      else:
+        jump_to_step(self, step_number)
     else:
       step_number = 0
       next_step(self)
